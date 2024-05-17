@@ -67,7 +67,7 @@ jobs:
           approvers: leandrofrs, bromba-noesis
           minimum-approvals: 1
           issue-title: "Gate Failed - Please Approve"
-          issue-body: "Please approve or deny the quality gate override.\nhttp://10.255.0.154:32008/api/project_badges/measure?project=java-sample-github&metric=alert_status&token=${{ secrets.SONAR_TOKEN }}"
+          issue-body: "Please approve or deny the quality gate override.\n\nClick here for more info: [![Quality Gate Status](http://10.255.0.154:32008/api/project_badges/measure?project=java-sample-github&metric=alert_status&token=${{ secrets.SONAR_TOKEN }})](http://10.255.0.154:32008/dashboard?id=java-sample-github)"
           exclude-workflow-initiator-as-approver: true
 
   build:
