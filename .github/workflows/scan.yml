@@ -5,7 +5,7 @@ on:
   
 jobs:
   scan:
-    runs-on: "10.255.0.255"
+    runs-on: "10.255.0.155"
     permissions: read-all
     
     steps:
