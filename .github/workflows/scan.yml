@@ -10,7 +10,8 @@ jobs:
   scan:
     name: Scan
     runs-on: self-hosted
-    permissions: read-all
+    permissions: write-all
+    
     outputs:
       quality-gate-result: ${{ steps.values.outputs.quality-gate-result }}
     steps:
