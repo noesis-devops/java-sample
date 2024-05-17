@@ -49,3 +49,45 @@ let b = true;
 while (b) {
     k++;    
 }
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
+while (b) {
+    k++;    
+}
