@@ -44,10 +44,3 @@
 
 })(jQuery); // End of use strict
 
-
-let k = 0;
-let b = true;
-
-while (b) {
-    k++;    
-}
