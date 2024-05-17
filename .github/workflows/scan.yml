@@ -1,0 +1,84 @@
+name: Scan & Build
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  scan:
+    name: Scan
+    runs-on: self-hosted
+    permissions: read-all
+    outputs:
+      quality-gate-result: ${{ steps.values.outputs.quality-gate-result }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - name: Cache SonarQube packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build and analyze
+        id: sonarqube-analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=java-sample-github -Dsonar.projectName='java-sample-github'
+  
+      - name: Wait for the quality gate result
+        run: sleep 5
+
+      - uses: phwt/sonarqube-quality-gate-action@v1
+        id: quality-gate-check
+        with:
+          sonar-project-key: java-sample-github
+          sonar-host-url: ${{ secrets.SONAR_HOST_URL }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main # Optional input
+
+      - name: Output result
+        id: output
+        run: |
+          echo "${{ steps.quality-gate-check.outputs.project-status }}"
+          echo "${{ steps.quality-gate-check.outputs.quality-gate-result }}"
+          echo "quality-gate-result=${{ steps.quality-gate-check.outputs.project-status }}" >> $Env:GITHUB_OUTPUT
+      
+      - uses: trstringer/manual-approval@v1
+        if: ${{ steps.quality-gate-check.outputs.project-status == 'ERROR' }}
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: leandrofrs, bromba-noesis
+          minimum-approvals: 1
+          issue-title: "Gate Failed - Please Approve"
+          issue-body: "Please approve or deny the quality gate override."
+          exclude-workflow-initiator-as-approver: true
+
+  build:
+    runs-on: self-hosted
+    needs: [scan]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: JasonEtco/create-an-issue@v2
+        #if: ${{ needs.scan.outputs.quality-gate-result == 'OK' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEV_TOKEN }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/smoke-test.md
+      - name: Build with Maven
+        run: mvn -B package
