@@ -47,7 +47,5 @@
 let k = 0;
 let b = true;
 while (b) {
-    k++;
-    b = false;
-    
+    k++;    
 }
