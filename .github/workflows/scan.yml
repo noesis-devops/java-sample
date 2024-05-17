@@ -5,7 +5,7 @@ on:
   
 jobs:
   scan:
-    runs-on: ubuntu-latest
+    runs-on: "10.255.0.255"
     permissions: read-all
     
     steps:
