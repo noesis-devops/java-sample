@@ -58,13 +58,24 @@ jobs:
           echo "${{ steps.quality-gate-check.outputs.project-status }}"
           echo "${{ steps.quality-gate-check.outputs.quality-gate-result }}"
           echo "quality-gate-result=${{ steps.quality-gate-check.outputs.project-status }}" >> $Env:GITHUB_OUTPUT
+      
+      - uses: trstringer/manual-approval@v1
+        if: ${{ steps.quality-gate-check.outputs.project-status == 'ERROR' }}
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: leandrofrs, bromba-noesis
+          minimum-approvals: 1
+          issue-title: "Gate Failed - Please Approve"
+          issue-body: "Please approve or deny the quality gate override."
+          exclude-workflow-initiator-as-approver: true
+
   build:
     runs-on: self-hosted
     needs: [scan]
     steps:
       - uses: actions/checkout@v2
       - uses: JasonEtco/create-an-issue@v2
-        if: ${{ needs.scan.outputs.quality-gate-result == 'OK' }}
+        #if: ${{ needs.scan.outputs.quality-gate-result == 'OK' }}
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TOKEN }}
         with:
