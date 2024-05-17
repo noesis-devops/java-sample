@@ -5,7 +5,7 @@ on:
   
 jobs:
   scan:
-    runs-on: node1
+    runs-on: self-hosted
     #permissions: read-all
     
     steps:
