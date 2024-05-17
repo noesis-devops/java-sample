@@ -1,4 +1,4 @@
-name: Build
+name: Scan & Build
 
 on:
   push:
@@ -7,10 +7,12 @@ on:
 
 
 jobs:
-  build:
-    name: Build
+  scan:
+    name: Scan
     runs-on: self-hosted
     permissions: read-all
+    outputs:
+      quality-gate-result: ${{ steps.values.outputs.quality-gate-result }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -36,7 +38,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=java-sample-github -Dsonar.projectName='java-sample-github' -Dsonar.qualitygate.wait=true
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=java-sample-github -Dsonar.projectName='java-sample-github'
   
       - name: Wait for the quality gate result
         run: sleep 5
@@ -51,6 +53,21 @@ jobs:
           branch: main # Optional input
 
       - name: Output result
+        id: output
         run: |
           echo "${{ steps.quality-gate-check.outputs.project-status }}"
           echo "${{ steps.quality-gate-check.outputs.quality-gate-result }}"
+          echo "quality-gate-result=${{ steps.quality-gate-check.outputs.project-status }}" >> $Env:GITHUB_OUTPUT
+  build:
+    runs-on: self-hosted
+    needs: [scan]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: JasonEtco/create-an-issue@v2
+        if: needs.scan.outputs.quality-gate-result == "OK"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEV_TOKEN }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/smoke-test.md
+      - name: Build with Maven
+        run: mvn -B package
