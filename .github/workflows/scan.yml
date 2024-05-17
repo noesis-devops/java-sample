@@ -5,8 +5,8 @@ on:
   
 jobs:
   scan:
-    runs-on: self-hosted
-    permissions: read-all
+    runs-on: node1
+    #permissions: read-all
     
     steps:
       - uses: actions/checkout@v2
